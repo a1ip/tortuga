@@ -27,6 +27,16 @@ var CL_ITEM_TEXT = "tortuga-lessonsListContainer-item-text"
 var CL_ITEM_TEXT_SELECTED = "tortuga-lessonsListContainer-item-textSelected"
 
 
+var getNumberLesson = function()
+{
+	var position = document.URL.indexOf('#');
+	if (position != -1) 
+		{
+			var number = document.URL.slice(position + 1);
+			return number;
+		} else return '';
+}
+
 var repairLinks = function (text)
 {
 	var answer = '<a href="$1">$2</a>';
@@ -44,13 +54,17 @@ var repairLineBreaks = function (text)
 	return text.replace(/&lt;br&gt;/gi, "<br/>").replace(/&lt;br\/&gt;/gi, "<br/>")
 }
 
-var selectItem = function(item, itemText, itemDiv,
+var selectItem = function(item, itemText, itemDiv, itemIndex,
 	selectedItemContext, bg, descrDiv, env)
 {
 	var sic = selectedItemContext;
 	env.setLessonsTitle(item.title);
 	descrDiv.innerHTML = repairLinks(item.description);
 	bg.style["backgroundImage"] = 'url("' + item.src + '")';
+	
+	if (itemIndex !== undefined){
+		window.location.hash = itemIndex;
+	}
 
 	if(sic.itemText)
 	{
@@ -87,18 +101,23 @@ var applyItem = function(list, inputItem, bg, selectedItemContext,
 
 	var itemDiv = document.createElement("LI");
 	appendClass(itemDiv, CL_ITEM);
-	itemDiv.onclick = function(e)
+
+	var selectCurrentItem = function()
 	{
-		selectItem(item, itemText, itemDiv, sic, bg, descrDiv, env);
+		selectItem(item, itemText, itemDiv, itemIndex, sic, bg, descrDiv, env);
 	}
+
+	itemDiv.onclick = selectCurrentItem;
+
 	itemDiv.appendChild(itemNumber);
 	itemDiv.appendChild(itemText);
 	list.appendChild(itemDiv);
 
 	return {
-		item: item,
-		itemText: itemText,
-		itemDiv: itemDiv
+		// item: item,
+		// itemText: itemText,
+		// itemDiv: itemDiv,
+		selectCurrent: selectCurrentItem
 	}
 }
 
@@ -113,13 +132,19 @@ var createList = function(lesson, bg, descrDiv, env)
 		return applyItem(ul, item, bg, selectedItemContext, descrDiv, index, env)
 	}
 
-	var firstObject = aifun(lesson[0], 1);
+	var selectedObject = aifun(lesson[0], 1);
+	var selectedIndex = getNumberLesson - 1;
+
 	for(var i = 1; i < size; ++i)
 	{
-		aifun(lesson[i], i+1)
+		var item = aifun(lesson[i], i+1)
+		if(selectedIndex == i)
+		{
+			selectedObject = item;
+		}
 	}
-	selectItem(firstObject.item, firstObject.itemText, firstObject.itemDiv,
-		selectedItemContext, bg, descrDiv, env);
+	
+	selectedObject.selectCurrent()
 	return ul;
 }
 
