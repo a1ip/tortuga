@@ -120,7 +120,12 @@ module.exports = function(grunt)
       'nodeunit',
       'jasmine',
     ]);
+    grunt.registerTask('inline', [
+      'sails-linker:inline_js',
+      'sails-linker:inline_css',
+    ]);
     grunt.registerTask('debug', [
+      'copy:debug',
       'sails-linker:debug_js',
       'sails-linker:debug_css',
     ]);
@@ -135,11 +140,11 @@ module.exports = function(grunt)
     grunt.task.renameTask('clean', 'delete_build_files')
     grunt.registerTask('clean', [
         'delete_build_files',
-        // 'sails-linker:clean_debug_js',
-        // 'sails-linker:clean_debug_css'
+        // 'sails-linker:clean_inline_js',
+        // 'sails-linker:clean_inline_css'
     ]);
     // grunt.registerTask('jsdoc', ['jsdoc']);
-    grunt.registerTask('default', ['debug']);
+    grunt.registerTask('default', ['inline']);
   };
 
   var grunt_config = {
@@ -474,15 +479,16 @@ var config_task_sailslinker = function(page, modules_map, grunt_config)
             sl_conf[task_name].files[page_file_name] = combine_files(dest_path, files[type].concat(copy_excluding));
         }
     };
-    process_files(debug_files, 'debug', path_src);
+    process_files(debug_files, 'inline', path_src);
+    process_files(debug_files, 'debug', path_debug);
     process_files(release_files, 'release', path_release);
 
-    var clean_debug_files = {};
+    var clean_inline_files = {};
     for (var type in debug_files)
     {
-        clean_debug_files[type] = [];
+        clean_inline_files[type] = [];
     }
-    process_files(clean_debug_files, 'clean_debug', path_src);
+    process_files(clean_inline_files, 'clean_inline', path_src);
 };
 
 /**
@@ -547,14 +553,16 @@ var config_task_copy = function(pages, modules_map, grunt_config)
         release_files = release_files.concat(files.release_files);
     });
     grunt_config.copy = {
-        // debug: {
-        //     files: [{
-        //         expand: true,
-        //         cwd: path_src,
-        //         src: ['**/*.*', '**/.*'].concat(invert_files(debug_files)),
-        //         dest: path_debug
-        //     }]
-        // },
+        debug: {
+            files: [{
+                expand: true,
+                cwd: path_src,
+                src: ['**/*.*', '**/.*'].concat(invert_files(release_files))
+                                        .concat(debug_files)
+                                        .concat(copy_excluding),
+                dest: path_debug
+            }]
+        },
         release: {
             files: [{
                 expand: true,
