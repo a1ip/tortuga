@@ -83,11 +83,6 @@ var start_steps_processing = function(steps, params, timeout_time, iteration_cal
 
 
 
-
-
-
-
-
 var stick = function(t, size, n, angle, proportion)
 {
 	if(n <= 0)
@@ -130,10 +125,8 @@ var redraw_snowflake = function(params)
 
 
 
-
-
 var my_params = {
-	t: createTortoise(),
+	t: createTortoise(440, 220, "green"),
 	size: 0,
 	n: 0,
 	angle: 60,
@@ -249,7 +242,7 @@ var start = function(count, callback)
 		return
 	}
 
-	var timeout_time = 1000 / 60;
+	var timeout_time = 500 / 60;
 	start_steps_processing(my_steps, my_params, timeout_time, redraw_snowflake,
 		function()
 		{
@@ -266,4 +259,3 @@ var init = function()
 init()
 
 alert("Click to start")
-
